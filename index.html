@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Periodic Element Viewer</title>
+ <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family: 'Inter', sans-serif;
+  background:#000;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* ---------------- NAVBAR ---------------- */
+
+nav{
+  position:fixed;
+  top:0;
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 8%;
+  backdrop-filter: blur(15px);
+  background:rgba(0, 0, 0, 0);
+  z-index:1000;
+  transition:0.3s ease;
+}
+
+nav.scrolled{
+  padding:12px 8%;
+  background:rgba(10,10,10,0.8);
+}
+
+nav h2{
+  font-weight:600;
+  letter-spacing:1px;
+}
+
+nav ul{
+  display:flex;
+  list-style:none;
+  gap:30px;
+}
+
+nav ul li{
+  cursor:pointer;
+  transition:0.3s;
+}
+
+nav ul li:hover{
+  color:#a855f7;
+}
+
+/* ---------------- HERO ---------------- */
+
+.hero{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  position:relative;
+  padding:0 20px;
+}
+
+/* Animated Orb */
+
+.orb{
+  position:absolute;
+  width:500px;
+  height:500px;
+  background: radial-gradient(circle at 30% 30%, #c084fc, #7e22ce, #3b0764);
+  border-radius:50%;
+  filter: blur(120px);
+  animation: float 6s ease-in-out infinite alternate;
+  z-index:-1;
+}
+
+@keyframes float{
+  from{ transform: translateY(-20px) scale(1); }
+  to{ transform: translateY(30px) scale(1.1); }
+}
+
+.hero h1{
+  font-size:3.5rem;
+  font-weight:700;
+  margin-bottom:20px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.hero p{
+  color:#ffffff;
+  max-width:600px;
+  margin-bottom:30px;
+}
+
+.buttons{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.btn{
+  padding:12px 28px;
+  border-radius:30px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.btn-primary{
+  background:#ffffff;
+  color:rgb(152, 10, 180);
+  
+}
+
+.btn-primary:hover{
+  background:#a855f7;
+  color: white;
+  transform:translateY(-3px);
+  box-shadow: #9d2ccaad 0px 4px 15px;
+}
+
+.btn-secondary{
+  background:transparent;
+  border:1px solid #555;
+  color:white;
+}
+
+.btn-secondary:hover{
+  border-color:#9333ea;
+  transform:translateY(-3px);
+}
+
+/* ---------------- SECTION ---------------- */
+
+.section{
+  padding:120px 8%;
+}
+
+.section h2{
+  font-size:2.2rem;
+  margin-bottom:20px;
+  text-align:center;
+}
+
+.section h3{
+  text-align:center;
+  color:#ffffff;
+  margin-bottom:60px;
+}
+
+/* ---------------- GRID ---------------- */
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:40px;
+}
+
+.card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  padding:30px;
+  border-radius:20px;
+  backdrop-filter:blur(15px);
+  transition:0.4s ease;
+  opacity:0;
+  transform:translateY(40px);
+}
+
+.card:hover{
+  transform:translateY(-10px);
+  border-color:#9333ea;
+}
+
+.card h3{
+  margin-bottom:15px;
+}
+
+.card p{
+  color:#aaa;
+  font-size:0.95rem;
+  margin-bottom:20px;
+}
+
+.card button{
+  background:#9333ea;
+  border:none;
+  padding:10px 20px;
+  border-radius:20px;
+  color:white;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.card button:hover{
+  background:#a855f7;
+}
+
+/* ---------------- REVEAL ANIMATION ---------------- */
+
+.show{
+  opacity:1 !important;
+  transform:translateY(0) !important;
+  transition:0.8s ease;
+}
+
+
+
+
+/*footer*/
+
+
+#last {
+    border-radius: 20px;
+   
+    color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    padding: 20px;
+    text-align: center;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    
+}
+
+.foot {
+    color: #ffffff;
+    text-align: center;
+    margin: 15px 0;
+}
+
+.foot h6 {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.copyright {
+    color: #ffffff;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    flex-wrap: wrap;
+}
+
+.copyright a {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.copyright a:hover {
+    transform: scale(1.2);
+}
+
+.copyright a img {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* ---------------- RESPONSIVE ---------------- */
+
+@media(max-width:768px){
+  .hero h1{
+    font-size:2.3rem;
+  }
+  nav ul{
+    display:none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<nav id="navbar">
+  <h2>Periodic Table</h2>
+  <ul>
+    <li ><a window.location.href='index.html'>Home</a></li>
+    <li><a window.location.href='table.html'></a>Table</li>
+    <li><a window.location.href='foot.html'></a>Powered by</li>
+   
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="orb"></div>
+  <h1>Periodic Element Viewer</h1>
+  <p>Explore all 118 elements with smooth animations, clean design, and immersive UI experience.</p>
+  <div class="buttons">
+    <button class="btn btn-primary" onclick="window.location.href='table.html'">Get Started</button>
+  
+  </div>
+</section>
+
+<section class="section">
+  <h2>Explore all 118 elements in a modern, interactive, and mobile-friendly periodic table!</h2><br>
+<h3><em>Our Features :</em></h3>
+
+  <div class="grid">
+   
+
+
+    <div class="card">
+      <h3>Custom UI Design</h3>
+      <p>Each element is displayed as a card with 3D tilt, glow effects, and category-specific color coding.</p>
+
+    </div>
+
+    <div class="card">
+      <h3>Interactive Tooltips</h3>
+<p>Hover or tap an element to view detailed information including atomic number, symbol, name, and category.</p>
+    </div>
+     <div class="card">
+      <h3>Atomic Animation</h3>
+      <p>A dynamic canvas shows simplified electron orbits for each element, bringing the atom to life.</p>
+
+    </div>
+   
+    <div class="card">
+      <h3>Search & Filter</h3>
+      <p>Quickly locate elements by name, symbol, or atomic number..</p>
+
+    </div>
+    <div class="card">
+      <h3>Educational Focus</h3>
+      <p>Lanthanides and Actinides are correctly positioned, and all 118 elements are included for comprehensive learning.</p>
+
+    </div>
+  </div>
+</section>
+    <br><br>
+    <section id="last">
+        <div class="foot">
+            <h6><em>Developed & Designed By </em><br> <b>AFRIDI MOHAMED J</b> (Ist Year - CSE)
+                <br> K.Ramakrishnan College Of Technology (KRCT).
+            </h6>
+            <h6>© 2026 All Rights Reserved.</h6>
+        </div>
+        <footer class="copyright">
+
+
+
+            <a href="https://afridi8.neocities.org/portfolio_1/"><i class="icon1"></i><img src="icon1.PNG" width="20px"
+                    height="20px"></a>
+            <a href="https://www.instagram.com/mr_afridi_mohamed?igsh=MWczZHM5anRxMTJ1NA%3D%3D"><i
+                    class="icon3"></i><img src="icon3.png" width="20px" height="20px"></a>
+            <a href="https://www.linkedin.com/in/afridimohamed-j/"><i class="icon2"></i><img src="icon2.png"
+                    width="20px" height="20px"></a>
+            <a href="https://github.com/Afridi2008"><i class="icon2"></i><img src="icon4.png" width="20px"
+                    height="20px"></a>
+        </footer>
+    </section>
+
+<script>
+
+/* Navbar shrink on scroll */
+window.addEventListener("scroll", () => {
+  const nav = document.getElementById("navbar");
+  if(window.scrollY > 50){
+    nav.classList.add("scrolled");
+  } else {
+    nav.classList.remove("scrolled");
+  }
+});
+
+/* Scroll Reveal */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add("show");
+    }
+  });
+}, { threshold:0.2 });
+
+document.querySelectorAll(".card").forEach(card => {
+  observer.observe(card);
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Periodic Table</title>
+ <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',sans-serif;
+  background:#0a0a12;
+  color:white;
+  overflow-x:hidden;
+  
+}
+
+/* Animated Background Orb */
+.orb{
+  position:fixed;
+  width:600px;
+  height:600px;
+  border-radius:50%;
+  background:linear-gradient(to top, #c084fc, #7e22ce, #3b0764);
+  opacity: 40%;
+  filter:blur(120px);
+  animation:float 8s ease-in-out infinite alternate;
+  z-index:-1;
+  top:10%;
+  left:20%;
+}
+@keyframes float{
+  from{transform:translateY(-40px) scale(1)}
+  to{transform:translateY(40px) scale(1.1)}
+}
+
+header{
+  text-align:center;
+  padding:40px 20px 20px;
+}
+
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+input,select{
+  padding:10px 15px;
+  border-radius:25px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.05);
+  color:white;
+}
+
+/* Table Grid */
+.table{
+  display:grid;
+  grid-template-columns:repeat(18,1fr);
+  gap:8px;
+  max-width:1400px;
+  margin:auto;
+  padding:20px;
+}
+
+/* Element Card */
+.element{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:14px;
+  padding:8px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.2s ease;
+  transform-style:preserve-3d;
+}
+.element:hover{
+  box-shadow:0 0 20px #9831f88e;
+ border:1px solid rgba(234, 55, 250, 0.801);
+ 
+/* Category Colors */
+[data-cat="Nonmetal"]{background:rgba(59,130,246,0.25)}
+[data-cat="Noble Gas"]{background:rgba(168,85,247,0.25)}
+[data-cat="Alkali Metal"]{background:rgba(239,68,68,0.25)}
+[data-cat="Alkaline Earth"]{background:rgba(249,115,22,0.25)}
+[data-cat="Transition Metal"]{background:rgba(34,197,94,0.25)}
+[data-cat="Post-Transition"]{background:rgba(244,114,182,0.25)}
+[data-cat="Metalloid"]{background:rgba(234,179,8,0.25)}
+[data-cat="Halogen"]{background:rgba(14,165,233,0.25)}
+[data-cat="Lanthanide"]{background:rgba(99,102,241,0.25)}
+[data-cat="Actinide"]{background:rgba(236,72,153,0.25)}
+}
+.num{font-size:10px;opacity:0.6}
+.sym{font-size:16px;font-weight:700}
+.name{font-size:8px;opacity:0.7}
+
+
+.hidden{opacity:0.1;pointer-events:none}
+
+/* Tooltip Panel */
+.tooltip{
+  position:fixed;
+  width:350px;
+  background:rgba(20,20,30,0.97);
+  backdrop-filter:blur(20px);
+  border-radius:20px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.1);
+  opacity:0;
+  transition:0.2s;
+  z-index:1000;
+}
+.tooltip canvas{
+  display:block;
+  margin:auto;
+  margin-bottom:15px;
+}
+.tooltip h2{margin-bottom:6px}
+.tooltip p{font-size:13px;opacity:0.85;margin-bottom:6px;line-height:1.4}
+.locked{pointer-events:auto}
+
+@media(max-width:900px){
+  .table{grid-template-columns:repeat(9,1fr)}
+}
+@media(max-width:600px){
+  .table{grid-template-columns:repeat(6,1fr)}
+}
+
+</style>
+</head>
+<body>
+
+<div class="orb"></div>
+
+<header>
+  <h1>Advanced Periodic Table</h1>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search element..."oninput="searchElement(this.value)">
+
+</div>
+
+<div class="table" id="table"></div>
+
+<div class="tooltip" id="tooltip">
+  <canvas id="atomCanvas" width="250" height="250"></canvas>
+  <div id="info"></div>
+</div>
+
+
+
+    
+
+<script>
+
+/* PASTE FULL 118 ELEMENT ARRAY HERE */
+const elements = [
+{n:1,s:"H",name:"Hydrogen",cat:"Nonmetal"},
+{n:2,s:"He",name:"Helium",cat:"Noble Gas"},
+{n:3,s:"Li",name:"Lithium",cat:"Alkali Metal"},
+{n:4,s:"Be",name:"Beryllium",cat:"Alkaline Earth"},
+{n:5,s:"B",name:"Boron",cat:"Metalloid"},
+{n:6,s:"C",name:"Carbon",cat:"Nonmetal"},
+{n:7,s:"N",name:"Nitrogen",cat:"Nonmetal"},
+{n:8,s:"O",name:"Oxygen",cat:"Nonmetal"},
+{n:9,s:"F",name:"Fluorine",cat:"Halogen"},
+{n:10,s:"Ne",name:"Neon",cat:"Noble Gas"},
+{n:11,s:"Na",name:"Sodium",cat:"Alkali Metal"},
+{n:12,s:"Mg",name:"Magnesium",cat:"Alkaline Earth"},
+{n:13,s:"Al",name:"Aluminium",cat:"Post-Transition"},
+{n:14,s:"Si",name:"Silicon",cat:"Metalloid"},
+{n:15,s:"P",name:"Phosphorus",cat:"Nonmetal"},
+{n:16,s:"S",name:"Sulfur",cat:"Nonmetal"},
+{n:17,s:"Cl",name:"Chlorine",cat:"Halogen"},
+{n:18,s:"Ar",name:"Argon",cat:"Noble Gas"},
+{n:19,s:"K",name:"Potassium",cat:"Alkali Metal"},
+{n:20,s:"Ca",name:"Calcium",cat:"Alkaline Earth"},
+{n:21,s:"Sc",name:"Scandium",cat:"Transition Metal"},
+{n:22,s:"Ti",name:"Titanium",cat:"Transition Metal"},
+{n:23,s:"V",name:"Vanadium",cat:"Transition Metal"},
+{n:24,s:"Cr",name:"Chromium",cat:"Transition Metal"},
+{n:25,s:"Mn",name:"Manganese",cat:"Transition Metal"},
+{n:26,s:"Fe",name:"Iron",cat:"Transition Metal"},
+{n:27,s:"Co",name:"Cobalt",cat:"Transition Metal"},
+{n:28,s:"Ni",name:"Nickel",cat:"Transition Metal"},
+{n:29,s:"Cu",name:"Copper",cat:"Transition Metal"},
+{n:30,s:"Zn",name:"Zinc",cat:"Transition Metal"},
+{n:31,s:"Ga",name:"Gallium",cat:"Post-Transition"},
+{n:32,s:"Ge",name:"Germanium",cat:"Metalloid"},
+{n:33,s:"As",name:"Arsenic",cat:"Metalloid"},
+{n:34,s:"Se",name:"Selenium",cat:"Nonmetal"},
+{n:35,s:"Br",name:"Bromine",cat:"Halogen"},
+{n:36,s:"Kr",name:"Krypton",cat:"Noble Gas"},
+{n:37,s:"Rb",name:"Rubidium",cat:"Alkali Metal"},
+{n:38,s:"Sr",name:"Strontium",cat:"Alkaline Earth"},
+{n:39,s:"Y",name:"Yttrium",cat:"Transition Metal"},
+{n:40,s:"Zr",name:"Zirconium",cat:"Transition Metal"},
+{n:41,s:"Nb",name:"Niobium",cat:"Transition Metal"},
+{n:42,s:"Mo",name:"Molybdenum",cat:"Transition Metal"},
+{n:43,s:"Tc",name:"Technetium",cat:"Transition Metal"},
+{n:44,s:"Ru",name:"Ruthenium",cat:"Transition Metal"},
+{n:45,s:"Rh",name:"Rhodium",cat:"Transition Metal"},
+{n:46,s:"Pd",name:"Palladium",cat:"Transition Metal"},
+{n:47,s:"Ag",name:"Silver",cat:"Transition Metal"},
+{n:48,s:"Cd",name:"Cadmium",cat:"Transition Metal"},
+{n:49,s:"In",name:"Indium",cat:"Post-Transition"},
+{n:50,s:"Sn",name:"Tin",cat:"Post-Transition"},
+{n:51,s:"Sb",name:"Antimony",cat:"Metalloid"},
+{n:52,s:"Te",name:"Tellurium",cat:"Metalloid"},
+{n:53,s:"I",name:"Iodine",cat:"Halogen"},
+{n:54,s:"Xe",name:"Xenon",cat:"Noble Gas"},
+{n:55,s:"Cs",name:"Cesium",cat:"Alkali Metal"},
+{n:56,s:"Ba",name:"Barium",cat:"Alkaline Earth"},
+{n:57,s:"La",name:"Lanthanum",cat:"Lanthanide"},
+{n:58,s:"Ce",name:"Cerium",cat:"Lanthanide"},
+{n:59,s:"Pr",name:"Praseodymium",cat:"Lanthanide"},
+{n:60,s:"Nd",name:"Neodymium",cat:"Lanthanide"},
+{n:61,s:"Pm",name:"Promethium",cat:"Lanthanide"},
+{n:62,s:"Sm",name:"Samarium",cat:"Lanthanide"},
+{n:63,s:"Eu",name:"Europium",cat:"Lanthanide"},
+{n:64,s:"Gd",name:"Gadolinium",cat:"Lanthanide"},
+{n:65,s:"Tb",name:"Terbium",cat:"Lanthanide"},
+{n:66,s:"Dy",name:"Dysprosium",cat:"Lanthanide"},
+{n:67,s:"Ho",name:"Holmium",cat:"Lanthanide"},
+{n:68,s:"Er",name:"Erbium",cat:"Lanthanide"},
+{n:69,s:"Tm",name:"Thulium",cat:"Lanthanide"},
+{n:70,s:"Yb",name:"Ytterbium",cat:"Lanthanide"},
+{n:71,s:"Lu",name:"Lutetium",cat:"Lanthanide"},
+{n:72,s:"Hf",name:"Hafnium",cat:"Transition Metal"},
+{n:73,s:"Ta",name:"Tantalum",cat:"Transition Metal"},
+{n:74,s:"W",name:"Tungsten",cat:"Transition Metal"},
+{n:75,s:"Re",name:"Rhenium",cat:"Transition Metal"},
+{n:76,s:"Os",name:"Osmium",cat:"Transition Metal"},
+{n:77,s:"Ir",name:"Iridium",cat:"Transition Metal"},
+{n:78,s:"Pt",name:"Platinum",cat:"Transition Metal"},
+{n:79,s:"Au",name:"Gold",cat:"Transition Metal"},
+{n:80,s:"Hg",name:"Mercury",cat:"Transition Metal"},
+{n:81,s:"Tl",name:"Thallium",cat:"Post-Transition"},
+{n:82,s:"Pb",name:"Lead",cat:"Post-Transition"},
+{n:83,s:"Bi",name:"Bismuth",cat:"Post-Transition"},
+{n:84,s:"Po",name:"Polonium",cat:"Metalloid"},
+{n:85,s:"At",name:"Astatine",cat:"Halogen"},
+{n:86,s:"Rn",name:"Radon",cat:"Noble Gas"},
+{n:87,s:"Fr",name:"Francium",cat:"Alkali Metal"},
+{n:88,s:"Ra",name:"Radium",cat:"Alkaline Earth"},
+{n:89,s:"Ac",name:"Actinium",cat:"Actinide"},
+{n:90,s:"Th",name:"Thorium",cat:"Actinide"},
+{n:91,s:"Pa",name:"Protactinium",cat:"Actinide"},
+{n:92,s:"U",name:"Uranium",cat:"Actinide"},
+{n:93,s:"Np",name:"Neptunium",cat:"Actinide"},
+{n:94,s:"Pu",name:"Plutonium",cat:"Actinide"},
+{n:95,s:"Am",name:"Americium",cat:"Actinide"},
+{n:96,s:"Cm",name:"Curium",cat:"Actinide"},
+{n:97,s:"Bk",name:"Berkelium",cat:"Actinide"},
+{n:98,s:"Cf",name:"Californium",cat:"Actinide"},
+{n:99,s:"Es",name:"Einsteinium",cat:"Actinide"},
+{n:100,s:"Fm",name:"Fermium",cat:"Actinide"},
+{n:101,s:"Md",name:"Mendelevium",cat:"Actinide"},
+{n:102,s:"No",name:"Nobelium",cat:"Actinide"},
+{n:103,s:"Lr",name:"Lawrencium",cat:"Actinide"},
+{n:104,s:"Rf",name:"Rutherfordium",cat:"Transition Metal"},
+{n:105,s:"Db",name:"Dubnium",cat:"Transition Metal"},
+{n:106,s:"Sg",name:"Seaborgium",cat:"Transition Metal"},
+{n:107,s:"Bh",name:"Bohrium",cat:"Transition Metal"},
+{n:108,s:"Hs",name:"Hassium",cat:"Transition Metal"},
+{n:109,s:"Mt",name:"Meitnerium",cat:"Transition Metal"},
+{n:110,s:"Ds",name:"Darmstadtium",cat:"Transition Metal"},
+{n:111,s:"Rg",name:"Roentgenium",cat:"Transition Metal"},
+{n:112,s:"Cn",name:"Copernicium",cat:"Transition Metal"},
+{n:113,s:"Nh",name:"Nihonium",cat:"Post-Transition"},
+{n:114,s:"Fl",name:"Flerovium",cat:"Post-Transition"},
+{n:115,s:"Mc",name:"Moscovium",cat:"Post-Transition"},
+{n:116,s:"Lv",name:"Livermorium",cat:"Post-Transition"},
+{n:117,s:"Ts",name:"Tennessine",cat:"Halogen"},
+{n:118,s:"Og",name:"Oganesson",cat:"Noble Gas"}
+];
+
+/* Periodic Position Map */
+function getPosition(n){
+  const map={
+    1:[1,1],2:[1,18],
+    3:[2,1],4:[2,2],5:[2,13],6:[2,14],7:[2,15],8:[2,16],9:[2,17],10:[2,18],
+    11:[3,1],12:[3,2],13:[3,13],14:[3,14],15:[3,15],16:[3,16],17:[3,17],18:[3,18],
+    19:[4,1],20:[4,2],21:[4,3],22:[4,4],23:[4,5],24:[4,6],25:[4,7],26:[4,8],
+    27:[4,9],28:[4,10],29:[4,11],30:[4,12],31:[4,13],32:[4,14],33:[4,15],
+    34:[4,16],35:[4,17],36:[4,18],
+    37:[5,1],38:[5,2],39:[5,3],40:[5,4],41:[5,5],42:[5,6],43:[5,7],44:[5,8],
+    45:[5,9],46:[5,10],47:[5,11],48:[5,12],49:[5,13],50:[5,14],51:[5,15],
+    52:[5,16],53:[5,17],54:[5,18],
+    55:[6,1],56:[6,2],72:[6,4],73:[6,5],74:[6,6],75:[6,7],76:[6,8],77:[6,9],
+    78:[6,10],79:[6,11],80:[6,12],81:[6,13],82:[6,14],83:[6,15],84:[6,16],
+    85:[6,17],86:[6,18],
+    87:[7,1],88:[7,2],104:[7,4],105:[7,5],106:[7,6],107:[7,7],108:[7,8],
+    109:[7,9],110:[7,10],111:[7,11],112:[7,12],113:[7,13],114:[7,14],
+    115:[7,15],116:[7,16],117:[7,17],118:[7,18]
+  };
+  if(n>=57&&n<=71)return[8,n-54];
+  if(n>=89&&n<=103)return[9,n-86];
+  return map[n]||[1,1];
+}
+
+const table=document.getElementById("table");
+for(let i=0;i<9*18;i++)table.appendChild(document.createElement("div"));
+
+/* Tooltip + Atom */
+const tooltip=document.getElementById("tooltip");
+const infoDiv=document.getElementById("info");
+const canvas=document.getElementById("atomCanvas");
+const ctx=canvas.getContext("2d");
+let electrons=[],animId,locked=false;
+
+function startAtom(count){
+  cancelAnimationFrame(animId);
+  electrons=[];
+  const shells=[2,8,18,32,32,18,8];
+  let remaining=count;
+  let radius=40;
+
+  shells.forEach(shell=>{
+    if(remaining>0){
+      const eCount=Math.min(shell,remaining);
+      for(let i=0;i<eCount;i++){
+        electrons.push({
+          angle:(i/eCount)*Math.PI*2,
+          radius:radius,
+          speed:0.01+Math.random()*0.01
+        });
+      }
+      remaining-=eCount;
+      radius+=25;
+    }
+  });
+
+  function animate(){
+    ctx.clearRect(0,0,250,250);
+    ctx.beginPath();
+    ctx.arc(125,125,15,0,Math.PI*2);
+    ctx.fillStyle="#a855f7";
+    ctx.fill();
+
+    electrons.forEach(e=>{
+      e.angle+=e.speed;
+      const x=125+e.radius*Math.cos(e.angle);
+      const y=125+e.radius*Math.sin(e.angle);
+      ctx.beginPath();
+      ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle="#fff";
+      ctx.fill();
+    });
+
+    animId=requestAnimationFrame(animate);
+  }
+  animate();
+  playSound();
+}
+
+/*sound*/
+
+function playSound(){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.type="sine";
+  osc.frequency.setValueAtTime(600,ctx.currentTime);
+  gain.gain.setValueAtTime(0.05,ctx.currentTime);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime+0.08);
+}
+
+
+/* Render Elements */
+elements.forEach(el=>{
+  const [r,c]=getPosition(el.n);
+  const index=(r-1)*18+(c-1);
+  const cell=table.children[index];
+
+  cell.className="element";
+  cell.dataset.cat=el.cat;
+  cell.innerHTML=`
+    <div class="num">${el.n}</div>
+    <div class="sym">${el.s}</div>
+    <div class="name">${el.name}</div>
+  `;
+
+  cell.addEventListener("mousemove",e=>{
+    if(!locked){
+      tooltip.style.left=e.pageX+20+"px";
+      tooltip.style.top=e.pageY+20+"px";
+    }
+  });
+
+  cell.addEventListener("mouseenter",()=>{
+    if(!locked){
+      tooltip.style.opacity=1;
+      infoDiv.innerHTML=`
+        <h2>${el.name} (${el.s})</h2>
+        <p><strong>Atomic Number:</strong> ${el.n}</p>
+        <p><strong>Category:</strong> ${el.cat}</p>
+        <p><strong>Description:</strong> ${el.name} is a chemical element belonging to the ${el.cat} group in the periodic table. It plays important roles in industrial, biological, and technological applications depending on its chemical properties.</p>
+      `;
+      startAtom(el.n);
+    }
+  });
+
+  cell.addEventListener("mouseleave",()=>{
+    if(!locked) tooltip.style.opacity=0;
+  });
+
+  cell.addEventListener("click",()=>{
+    locked=!locked;
+  });
+
+  /* 3D Tilt */
+  cell.addEventListener("mousemove",e=>{
+    const rect=cell.getBoundingClientRect();
+    const x=e.clientX-rect.left;
+    const y=e.clientY-rect.top;
+    const rotateX=-(y-rect.height/2)/8;
+    const rotateY=(x-rect.width/2)/8;
+    cell.style.transform=`rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.08)`;
+  });
+  cell.addEventListener("mouseleave",()=>{
+    cell.style.transform="rotateX(0) rotateY(0) scale(1)";
+  });
+});
+
+/* Search + Filter */
+const search=document.getElementById("search");
+const filter=document.getElementById("filter");
+
+function applyFilter(){
+  const q=search.value.toLowerCase();
+  const cat=filter.value;
+
+  document.querySelectorAll(".element").forEach(el=>{
+    const name=el.querySelector(".name").textContent.toLowerCase();
+    const sym=el.querySelector(".sym").textContent.toLowerCase();
+    const num=el.querySelector(".num").textContent;
+    const match=name.includes(q)||sym.includes(q)||num.includes(q);
+    const matchCat=(cat==="All")||el.dataset.cat===cat;
+    el.classList.toggle("hidden",!(match&&matchCat));
+  });
+}
+
+function searchElement(value){
+  document.querySelectorAll(".element").forEach(el=>{
+    el.style.display=el.innerText.toLowerCase().includes(value.toLowerCase())
+      ? "block":"none";
+  });
+}
+search.addEventListener("input",applyFilter);
+filter.addEventListener("change",applyFilter);
+
+</script>
+</body>
+</html>
